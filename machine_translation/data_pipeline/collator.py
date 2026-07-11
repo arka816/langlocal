@@ -30,8 +30,8 @@ class DynamicTrimmingCollator:
         tgt_batch_final[:, 1:-1] = tgt_batch_trimmed
         tgt_batch_final[:, -1] = self.eos_id
 
-        src_tensors = torch.from_numpy(src_batch_trimmed)
-        tgt_tensors = torch.from_numpy(tgt_batch_final)
+        src_tensors = torch.from_numpy(src_batch_trimmed).long()    # Convert to int64
+        tgt_tensors = torch.from_numpy(tgt_batch_final)             # Convert to int64
 
         batch = Batch(src=src_tensors, tgt=tgt_tensors, pad=self.pad_id)
 
