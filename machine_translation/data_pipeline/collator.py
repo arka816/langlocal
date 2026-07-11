@@ -4,7 +4,7 @@ import torch
 from machine_translation.data_pipeline.batch import Batch
 
 class Collator:
-    def __init__(pad_id=2):
+    def __init__(self, pad_id=2):
         self.pad_id = pad_id
 
     def __call__(self, batch):
