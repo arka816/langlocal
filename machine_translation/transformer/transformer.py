@@ -3,10 +3,10 @@ from copy import deepcopy
 import torch
 import torch.nn as nn
 
-from embeddings import Embeddings, PositionalEncoding
-from utils import subsequent_mask, clones
-from attention import MultiHeadedAttention
-from layers import LayerNorm, SublayerConnection, PositionFeedForward, Generator
+from machine_translation.transformer.embeddings import Embeddings, PositionalEncoding
+from machine_translation.transformer.utils import subsequent_mask, clones
+from machine_translation.transformer.attention import MultiHeadedAttention
+from machine_translation.transformer.layers import LayerNorm, SublayerConnection, PositionFeedForward, Generator
 
 
 class EncoderLayer(nn.Module):

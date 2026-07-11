@@ -2,11 +2,11 @@ import time
 import os
 from dataclasses import dataclass
 
-from data_pipeline.dataset import TranslationDataset
-from data_pipeline.collator import DynamicTrimmingCollator
-from data_pipeline.batch import Batch
-from loss import Loss
-from transformer import make_model
+from machine_translation.data_pipeline.dataset import TranslationDataset
+from machine_translation.data_pipeline.collator import DynamicTrimmingCollator
+from machine_translation.data_pipeline.batch import Batch
+from machine_translation.transformer.loss import Loss
+from machine_translation.transformer.transformer import make_model
 
 import torch
 import torch.nn as nn

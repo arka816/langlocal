@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from batch import Batch
+from machine_translation.data_pipeline.batch import Batch
 
 class DynamicTrimmingCollator:
     def __init__(self, bos_id=0, eos_id=1, pad_id=2):
