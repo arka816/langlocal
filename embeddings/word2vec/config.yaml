@@ -1,0 +1,18 @@
+samples:
+  MIN_TERM_FREQUENCY: 10
+  ALPHA: 0.75
+
+training:
+  CONTEXT_WINDOW_SIZE: 2
+  NUM_NEGATIVE_SAMPLES: 5
+  NUM_EPOCHS: 20
+  BATCH_SIZE: 1024
+  LEARNING_RATE: 0.001
+  EMBEDDING_DIM: 128
+
+cache:
+  CHECKPOINTS_PATH: "cache/checkpoints"
+  EMBEDDINGS_PATH: "cache/embeddings"
+  SAMPLES_PATH: "cache/samples"
+  VOCABULARY_PATH: "cache/vocabulary"
+  INDEX_PATH: "cache/index"

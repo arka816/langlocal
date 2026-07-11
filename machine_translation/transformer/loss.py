@@ -1,0 +1,14 @@
+class Loss:
+    "A loss computation function."
+
+    def __init__(self, generator, criterion):
+        self.generator = generator
+        self.criterion = criterion
+
+    def __call__(self, x, y, norm):
+        x = self.generator(x)
+        loss = self.criterion(
+            x.contiguous().view(-1, x.size(-1)),    # B*S x  V  - softmaxed logits
+            y.contiguous().view(-1)                 # B*S   - labels
+        ) / norm
+        return loss
