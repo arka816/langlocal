@@ -188,7 +188,7 @@ def train_tpu_single_core(
             # [TPU] Move batch tensors to XLA device
             batch.to_device(device)
 
-            with torch.autocast(device_type=device, dtype=torch.bfloat16):
+            with torch.autocast(device_type="xla", dtype=torch.bfloat16):
                 # [TPU] Forward pass (all tensors on device)
                 output = model(
                     batch.src, 
