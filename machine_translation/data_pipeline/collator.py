@@ -3,6 +3,22 @@ import torch
 
 from machine_translation.data_pipeline.batch import Batch
 
+class Collator:
+    def __init__(pad_id=2):
+        self.pad_id = pad_id
+
+    def __call__(self, batch):
+        src_batch = np.array([item[0] for item in batch])
+        tgt_batch = np.array([item[1] for item in batch])
+
+        src_tensors = torch.from_numpy(src_batch).long()    # Convert to int64
+        tgt_tensors = torch.from_numpy(tgt_batch).long()    # Convert to int64
+
+        batch = Batch(src=src_tensors, tgt=tgt_tensors, pad=self.pad_id)
+
+        return batch
+
+
 class DynamicTrimmingCollator:
     def __init__(self, bos_id=0, eos_id=1, pad_id=2):
         self.bos_id = bos_id

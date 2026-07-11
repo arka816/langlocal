@@ -3,7 +3,7 @@ import os
 from dataclasses import dataclass
 
 from machine_translation.data_pipeline.dataset import TranslationDataset
-from machine_translation.data_pipeline.collator import DynamicTrimmingCollator
+from machine_translation.data_pipeline.collator import Collator, DynamicTrimmingCollator
 from machine_translation.data_pipeline.batch import Batch
 from machine_translation.transformer.loss import Loss
 from machine_translation.transformer.transformer import make_model
@@ -138,12 +138,16 @@ def train_tpu_single_core(
     epochs=10,
     loader_workers=0,
     checkpoint_filepath=None,
+    dynamic_padding=False,
 ):
     device = xm.xla_device()
     print(f"Using XLA device: {device}")
 
     translation_dataset = TranslationDataset(src_file, tgt_file, dims=file_dims)
-    collator = DynamicTrimmingCollator(bos_id=bos_id, eos_id=eos_id, pad_id=pad_id)
+    if dynamic_padding:
+        collator = DynamicTrimmingCollator(bos_id=bos_id, eos_id=eos_id, pad_id=pad_id)
+    else:
+        collator = Collator(pad_id=pad_id)
 
     loader = DataLoader(
         translation_dataset,
@@ -179,21 +183,22 @@ def train_tpu_single_core(
             if epoch == start_epoch and step < start_step:
                 continue
 
-            optimizer.zero_grad()
+            optimizer.zero_grad(set_to_none=True)
 
             # [TPU] Move batch tensors to XLA device
             batch.to_device(device)
 
-            # [TPU] Forward pass (all tensors on device)
-            output = model(
-                batch.src, 
-                batch.tgt, 
-                batch.src_mask, 
-                batch.tgt_mask
-            )
+            with torch.autocast(device_type=device, dtype=torch.bfloat16):
+                # [TPU] Forward pass (all tensors on device)
+                output = model(
+                    batch.src, 
+                    batch.tgt, 
+                    batch.src_mask, 
+                    batch.tgt_mask
+                )
 
-            # [TPU] Loss computation (output and batch.tgt_y are on device)
-            loss_ = loss(output, batch.tgt_y, batch.ntokens)
+                # [TPU] Loss computation (output and batch.tgt_y are on device)
+                loss_ = loss(output, batch.tgt_y, batch.ntokens)
 
             # [TPU] Backward pass
             loss_.backward()
