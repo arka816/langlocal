@@ -21,10 +21,10 @@ class PositionalEncoding(nn.Module):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
 
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len)
+        pe = torch.zeros(max_len, d_model, dtype=torch.float32)
+        position = torch.arange(0, max_len, dtype=torch.float32)
         div_term = torch.exp(
-            torch.arange(0, d_model, 2) * -(math.log(10_000.0) / d_model)
+            torch.arange(0, d_model, 2, dtype=torch.float32) * -(math.log(10_000.0) / d_model)
         )
         term = torch.einsum("i,j->ij", position, div_term)
 

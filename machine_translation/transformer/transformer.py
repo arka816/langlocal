@@ -146,6 +146,9 @@ def make_model(
         if p.dim() > 1:
             nn.init.xavier_uniform_(p)
 
+    # Ensure all parameters are FP32
+    model = model.float()
+
     return model
 
 
