@@ -176,7 +176,7 @@ def train_tpu_single_core(
         epoch_start_time = time.time()
         
         for step, batch in enumerate(loader):
-            if epoch == start_epoch and step <= start_step:
+            if epoch == start_epoch and step < start_step:
                 continue
 
             optimizer.zero_grad()
