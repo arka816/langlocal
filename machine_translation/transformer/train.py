@@ -197,20 +197,21 @@ def train_tpu_single_core(
 
             # [TPU] Loss computation (output and batch.tgt_y are on device)
             loss_ = loss(output, batch.tgt_y, batch.ntokens)
-            # [CPU] Extract scalar loss value from device
-            loss_value = loss_.item()
 
             # [TPU] Backward pass
             loss_.backward()
 
             # [TPU] Optimizer step on XLA device
             xm.optimizer_step(optimizer)
-            
-            # [CPU] Scheduler step
-            lr_scheduler.step()
 
             # [TPU] Mark step boundary for XLA computation
             xm.mark_step()
+
+            # [CPU] Scheduler step
+            lr_scheduler.step()
+
+            # [CPU] Extract scalar loss value from device
+            loss_value = loss_.item()
 
             # [CPU] Accumulate metrics (Python scalars)
             total_loss += loss_value
