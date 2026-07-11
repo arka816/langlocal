@@ -181,9 +181,6 @@ def train_tpu_single_core(
 
             optimizer.zero_grad()
 
-            # [CPU] Extract ntokens before moving batch to device
-            ntokens = batch.ntokens.item()
-
             # [TPU] Move batch tensors to XLA device
             batch.to_device(device)
 
@@ -212,6 +209,9 @@ def train_tpu_single_core(
 
             # [CPU] Extract scalar loss value from device
             loss_value = loss_.item()
+
+            # [CPU] Extract ntokens before moving batch to device
+            ntokens = batch.ntokens.item()
 
             # [CPU] Accumulate metrics (Python scalars)
             total_loss += loss_value
