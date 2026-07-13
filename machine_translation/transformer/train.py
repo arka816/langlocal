@@ -233,10 +233,10 @@ def train_tpu_single_core(
 
             # [CPU] Save checkpoint after every few batches
             if save_every is not None and step != 0 and step % save_every == 0:
-                save_checkpoint(model, optimizer, filepath=checkpoint_filepath, epoch=epoch + 1, step=step + 1)
-
                 metric = tpumonitoring.get_metric("duty_cycle_pct")
-                print("Core Utilization (%):", metric.data(), end="\r", flush=True)
+                print("TPU Core Utilization (%):", metric.data(), end="\r", flush=True)
+
+                save_checkpoint(model, optimizer, filepath=checkpoint_filepath, epoch=epoch + 1, step=step + 1)
 
             # [CPU] Print progress
             print(
