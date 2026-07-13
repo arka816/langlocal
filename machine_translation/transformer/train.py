@@ -30,18 +30,15 @@ class TrainState:
     tokens: int = 0     # Total number of tokens processed
 
 
-def load_checkpoint(model, optimizer, filepath, device):
+def load_checkpoint(filepath):
     if not filepath or not os.path.exists(filepath):
-        return 0, 0
+        return None
 
     print(f"Loading checkpoint from {filepath}...", flush=True)
 
-    checkpoint = torch.load(filepath, map_location=device)
+    checkpoint = torch.load(filepath, map_location="cpu")
 
-    model.load_state_dict(checkpoint["model_state_dict"])
-    optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-
-    return checkpoint["epoch"], checkpoint["step"]
+    return checkpoint
 
 
 def save_checkpoint(model, optimizer, filepath, epoch, step):
@@ -162,12 +159,24 @@ def train_tpu_single_core(
         drop_last=False
     )
 
-    model = make_model(**model_configs).to(device=device)
+    model = make_model(**model_configs)
+
+    # load check point here
+    checkpoint = load_checkpoint(checkpoint_filepath)
+
+    # load model state send model to device
+    if checkpoint:
+        model.load_state_dict(checkpoint["model_state_dict"])
+    model = model.to(device=device)
+
+    # load optimizer state after model has been moved to device
+    optimizer = optim.Adam(model.parameters(), betas=(0.9, 0.98), eps=1e-9, lr=1)
+    if checkpoint:
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
 
     criterion = nn.CrossEntropyLoss(reduction="sum", ignore_index=pad_id)
     loss = Loss(model.generator, criterion)
 
-    optimizer = optim.Adam(model.parameters(), betas=(0.9, 0.98), eps=1e-9, lr=1)
     lr_scheduler = LambdaLR(
         optimizer=optimizer,
         lr_lambda=lambda step: rate(step, model_size=model_configs["d_model"])
@@ -175,10 +184,13 @@ def train_tpu_single_core(
 
     model.train()
 
-    start_epoch, start_step = load_checkpoint(model, optimizer, checkpoint_filepath, device)
     
     total_loss = 0.0
     total_tokens = 0
+    if checkpoint:
+        start_epoch, start_step = checkpoint["epoch"], checkpoint["step"]
+    else:
+        start_epoch, start_step = 0, 0
 
     for epoch in range(start_epoch, epochs):
         epoch_start_time = time.time()
@@ -234,9 +246,9 @@ def train_tpu_single_core(
             # [CPU] Save checkpoint after every few batches
             if save_every is not None and step != 0 and step % save_every == 0:
                 metric = tpumonitoring.get_metric("duty_cycle_pct")
-                print("TPU Core Utilization (%):", metric.data(), end="\r", flush=True)
+                print("TPU Core Utilization (%):", metric.data(), flush=True)
 
-                save_checkpoint(model, optimizer, filepath=checkpoint_filepath, epoch=epoch + 1, step=step + 1)
+                save_checkpoint(model, optimizer, filepath=checkpoint_filepath, epoch=epoch, step=step + 1)
 
             # [CPU] Print progress
             print(
