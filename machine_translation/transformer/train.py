@@ -17,6 +17,9 @@ from torch.optim.lr_scheduler import LambdaLR
 
 import torch_xla.core.xla_model as xm
 
+from libtpu.sdk import tpumonitoring
+
+
 @dataclass
 class TrainState:
     """Track number of steps, examples and tokens processed."""
@@ -228,15 +231,19 @@ def train_tpu_single_core(
             batch_loss = loss_value / ntokens
             cum_loss = total_loss / total_tokens
 
+            # [CPU] Save checkpoint after every few batches
+            if save_every is not None and step != 0 and step % save_every == 0:
+                save_checkpoint(model, optimizer, filepath=checkpoint_filepath, epoch=epoch + 1, step=step + 1)
+
+                metric = tpumonitoring.get_metric("duty_cycle_pct")
+                print("Core Utilization (%):", metric.data(), end="\r", flush=True)
+
             # [CPU] Print progress
             print(
-                f"Epoch {epoch+1}/{epochs} | Batch {step+1} | Loss: {batch_loss:.4f} | Cum Loss: {cum_loss:.4f} | Time: {elapsed_epoch:.1f}s",
+                f"Epoch {epoch+1}/{epochs} | Batch {step+1} | Loss: {batch_loss:.6f} | Cum Loss: {cum_loss:.6f} | Time: {elapsed_epoch:.1f}s",
                 end="\r",
                 flush=True
             )
-
-            if save_every is not None and step != 0 and step % save_every == 0:
-                save_checkpoint(model, optimizer, filepath=checkpoint_filepath, epoch=epoch + 1, step=step + 1)
 
         print()  # New line after epoch completes
         if save_every is not None and step % save_every != 0:
