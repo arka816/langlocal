@@ -31,7 +31,7 @@ def load_checkpoint(model, optimizer, filepath, device):
     if not filepath or not os.path.exists(filepath):
         return 0, 0
 
-    print(f"Loading checkpoint from {filepath}...")
+    print(f"Loading checkpoint from {filepath}...", flush=True)
 
     checkpoint = torch.load(filepath, map_location=device)
 
@@ -54,7 +54,7 @@ def save_checkpoint(model, optimizer, filepath, epoch, step):
 
     torch.save(checkpoint, filepath)
 
-    print(f"Checkpoint successfully saved to {filepath} at Epoch {epoch}, Step {step}")
+    print(f"Checkpoint successfully saved to {filepath} at Epoch {epoch}, Step {step}", flush=True)
 
 def rate(step, model_size=512, factor=1, warmup=4000):
     if step == 0:
@@ -139,6 +139,7 @@ def train_tpu_single_core(
     loader_workers=0,
     checkpoint_filepath=None,
     dynamic_padding=False,
+    save_every=1000
 ):
     device = xm.xla_device()
     print(f"Using XLA device: {device}")
@@ -234,5 +235,9 @@ def train_tpu_single_core(
                 flush=True
             )
 
+            if save_every is not None and step != 0 and step % save_every == 0:
+                save_checkpoint(model, optimizer, filepath=checkpoint_filepath, epoch=epoch + 1, step=step + 1)
+
         print()  # New line after epoch completes
-        save_checkpoint(model, optimizer, filepath=checkpoint_filepath, epoch=epoch + 1, step=0)            
+        if save_every is not None and step % save_every != 0:
+            save_checkpoint(model, optimizer, filepath=checkpoint_filepath, epoch=epoch + 1, step=0)            
