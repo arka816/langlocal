@@ -22,9 +22,9 @@ class Batch:
 
     def to_device(self, device):
         if device:
-            self.src = self.src.to(device)
-            self.tgt = self.tgt.to(device)
-            self.tgt_y = self.tgt_y.to(device)
-            self.src_mask = self.src_mask.to(device)
-            self.tgt_mask = self.tgt_mask.to(device)
-            self.ntokens = self.ntokens.to(device)
+            self.src = self.src.to(device, non_blocking=True)
+            self.tgt = self.tgt.to(device, non_blocking=True)
+            self.tgt_y = self.tgt_y.to(device, non_blocking=True)
+            self.src_mask = self.src_mask.to(device, non_blocking=True)
+            self.tgt_mask = self.tgt_mask.to(device, non_blocking=True)
+            self.ntokens = self.ntokens.to(device, non_blocking=True)

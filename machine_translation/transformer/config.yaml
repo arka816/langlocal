@@ -6,7 +6,7 @@ data:
 training:
   NUM_EPOCHS: 10
   BATCH_SIZE: 128
-  LOADER_WORKERS: 4
+  LOADER_WORKERS: 2
   DYNAMIC_PADDING: False
 
 model:
