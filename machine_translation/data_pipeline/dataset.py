@@ -40,7 +40,7 @@ class TranslationDatasetFast(Dataset):
         offset = idx * self.size * element_size
         
         # High-performance, native PyTorch file streaming (bypasses numpy)
-        x = torch.from_file(self.src_file, shared=True, size=self.size, dtype=np.uint16, offset=offset)
-        y = torch.from_file(self.tgt_file, shared=True, size=self.size, dtype=np.uint16, offset=offset)
+        x = torch.from_file(self.src_file, shared=True, size=self.size, dtype=torch.uint16, offset=offset)
+        y = torch.from_file(self.tgt_file, shared=True, size=self.size, dtype=torch.uint16, offset=offset)
         
         return x, y
