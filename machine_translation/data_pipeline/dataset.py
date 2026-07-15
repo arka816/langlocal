@@ -19,10 +19,14 @@ class TranslationDataset(Dataset):
         )
 
     def __len__(self):
-        return self.src_memmap.shape[0]
+        return dims[0]
 
-    def __getitem__(self, idx):
-        return self.src_memmap[idx], self.tgt_memmap[idx]
+    # PyTorch 2.x batched fetching
+    def __getitems__(self, indices):
+        src = torch.from_numpy(self.src_memmap[indices]).long()
+        tgt = torch.from_numpy(self.tgt_memmap[indices]).long()
+
+        return src, tgt
 
 
 class TranslationDatasetFast(Dataset):

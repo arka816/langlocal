@@ -138,6 +138,7 @@ def train_tpu_single_core(
     batch_size=256,
     epochs=10,
     loader_workers=0,
+    loader_prefetch_factor=4,
     checkpoint_filepath=None,
     dynamic_padding=False,
     save_every=1000
@@ -145,7 +146,7 @@ def train_tpu_single_core(
     device = xm.xla_device()
     print(f"Using XLA device: {device}", end="\n", flush=True)
 
-    translation_dataset = TranslationDatasetFast(src_file, tgt_file, dims=file_dims)
+    translation_dataset = TranslationDataset(src_file, tgt_file, dims=file_dims)
     if dynamic_padding:
         collator = DynamicTrimmingCollator(bos_id=bos_id, eos_id=eos_id, pad_id=pad_id)
     else:
@@ -158,6 +159,8 @@ def train_tpu_single_core(
         collate_fn=collator,
         num_workers=loader_workers,
         drop_last=False,
+        persistent_workers=True,
+        prefetch_factor=loader_prefetch_factor,
     )
 
     tpu_loader = pl.MpDeviceLoader(loader, device)

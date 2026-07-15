@@ -8,11 +8,13 @@ class Collator:
         self.pad_id = pad_id
 
     def __call__(self, batch):
-        src_batch = np.array([item[0] for item in batch])
-        tgt_batch = np.array([item[1] for item in batch])
+        # src_batch = np.array([item[0] for item in batch])
+        # tgt_batch = np.array([item[1] for item in batch])
 
-        src_tensors = torch.from_numpy(src_batch).long()    # Convert to int64
-        tgt_tensors = torch.from_numpy(tgt_batch).long()    # Convert to int64
+        # src_tensors = torch.from_numpy(src_batch).long()    # Convert to int64
+        # tgt_tensors = torch.from_numpy(tgt_batch).long()    # Convert to int64
+
+        src_tensors, tgt_tensors = batch
 
         batch = Batch(src=src_tensors, tgt=tgt_tensors, pad=self.pad_id)
 
