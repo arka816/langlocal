@@ -7,6 +7,7 @@ from machine_translation.data_pipeline.collator import Collator, DynamicTrimming
 from machine_translation.data_pipeline.batch import Batch
 from machine_translation.transformer.loss import Loss
 from machine_translation.transformer.transformer import make_model
+from machine_translation.transformer.utils import load_checkpoint, save_checkpoint
 
 import torch
 import torch.nn as nn
@@ -30,32 +31,6 @@ class TrainState:
     samples: int = 0    # Total number of examples used
     tokens: int = 0     # Total number of tokens processed
 
-
-def load_checkpoint(filepath):
-    if not filepath or not os.path.exists(filepath):
-        return None
-
-    print(f"Loading checkpoint from {filepath}...", flush=True)
-
-    checkpoint = torch.load(filepath, map_location="cpu")
-
-    return checkpoint
-
-
-def save_checkpoint(model, optimizer, filepath, epoch, step):
-    if not filepath:
-        return
-
-    checkpoint = {
-        "epoch": epoch,
-        "step": step,
-        "model_state_dict": model.state_dict(),
-        "optimizer_state_dict": optimizer.state_dict(),
-    }
-
-    torch.save(checkpoint, filepath)
-
-    print(f"Checkpoint successfully saved to {filepath} at Epoch {epoch}, Step {step}", end="\n", flush=True)
 
 def rate(step, model_size=512, factor=1, warmup=4000):
     if step == 0:
